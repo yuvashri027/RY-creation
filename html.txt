@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RY Creations - Management Portal</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e1b4b, #0f172a);
+            min-height: 100vh;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(15px);
+        }
+
+        input, textarea, select {
+            outline: none;
+        }
+
+        .toast {
+            animation: fadeIn .3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+
+<body class="text-slate-800">
+
+    <div id="toastContainer" class="fixed top-4 right-4 z-[100] space-y-2"></div>
+
+    <div class="min-h-screen flex flex-col">
+
+        <!-- HEADER -->
+        <header class="bg-slate-900/95 border-b border-slate-700 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+
+                <div onclick="showLanding()" class="flex items-center gap-3 cursor-pointer">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center text-white font-black text-xl">
+                        RY
+                    </div>
+                    <div>
+                        <h1 class="text-white font-extrabold text-lg">RY CREATIONS</h1>
+                        <p class="text-blue-400 text-xs">Enterprise Portal</p>
+                    </div>
+                </div>
+
+                <button id="loginNavBtn"
+                    onclick="showAuthModal('user')"
+                    class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-bold">
+                    <i class="fa-solid fa-right-to-bracket mr-2"></i>Login / Register
+                </button>
+
+                <div id="userInfoBadge" class="hidden items-center gap-3">
+                    <div class="text-right">
+                        <p id="navUserName" class="text-white font-bold text-sm"></p>
+                        <p id="navUserRole" class="text-blue-400 text-xs"></p>
+                    </div>
+                    <button onclick="logout()" class="text-red-400 p-2" title="Logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+
+            </div>
+        </header>
+
+        <main class="flex-grow">
+
+            <!-- LANDING PAGE -->
+            <section id="landingSection" class="max-w-6xl mx-auto px-4 py-20 text-center">
+
+                <span class="inline-block bg-blue-500/10 text-blue-300 border border-blue-500/30 px-4 py-2 rounded-full text-sm mb-6">
+                    <i class="fa-solid fa-sparkles mr-2"></i>
+                    Employee & Project Management
+                </span>
+
+                <h1 class="text-4xl md:text-6xl font-black text-white mb-6">
+                    Welcome to
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+                        RY Creations
+                    </span>
+                </h1>
+
+                <p class="text-slate-300 max-w-2xl mx-auto text-lg mb-10">
+                    Manage employee activities, submit daily work reports, track productivity,
+                    and monitor project progress in one place.
+                </p>
+
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <button onclick="showAuthModal('user')"
+                        class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-bold">
+                        <i class="fa-solid fa-user mr-2"></i>Employee Login / Sign Up
+                    </button>
+
+                    <button onclick="showAuthModal('admin')"
+                        class="bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 px-8 py-4 rounded-xl font-bold">
+                        <i class="fa-solid fa-shield-halved mr-2"></i>Admin Portal
+                    </button>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-6 mt-16 text-left">
+
+                    <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl">
+                        <i class="fa-solid fa-list-check text-blue-400 text-3xl mb-4"></i>
+                        <h3 class="text-white font-bold text-lg mb-2">Daily Work Logs</h3>
+                        <p class="text-slate-400 text-sm">Submit tasks, hours, and project updates.</p>
+                    </div>
+
+                    <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl">
+                        <i class="fa-solid fa-chart-line text-purple-400 text-3xl mb-4"></i>
+                        <h3 class="text-white font-bold text-lg mb-2">Progress Tracking</h3>
+                        <p class="text-slate-400 text-sm">Track employee work and report status.</p>
+                    </div>
+
+                    <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl">
+                        <i class="fa-solid fa-users text-emerald-400 text-3xl mb-4"></i>
+                        <h3 class="text-white font-bold text-lg mb-2">Employee Management</h3>
+                        <p class="text-slate-400 text-sm">Manage employee profiles and reports.</p>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- EMPLOYEE DASHBOARD -->
+            <section id="userDashboard" class="hidden max-w-7xl mx-auto p-4 md:p-8">
+
+                <div class="grid lg:grid-cols-3 gap-6">
+
+                    <div class="glass rounded-2xl p-6 shadow-xl">
+                        <div class="text-center">
+                            <div class="w-20 h-20 rounded-full bg-blue-600 text-white mx-auto flex items-center justify-center text-3xl">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+
+                            <h2 id="userDashName" class="font-extrabold text-xl mt-4"></h2>
+                            <p id="userDashRole" class="text-blue-600 font-semibold"></p>
+                            <p id="userDashId" class="text-slate-500 text-sm mt-1"></p>
+                        </div>
+
+                        <hr class="my-5">
+
+                        <p class="text-sm mb-2">
+                            <i class="fa-solid fa-envelope mr-2 text-blue-500"></i>
+                            <span id="userDashEmail"></span>
+                        </p>
+
+                        <p class="text-sm">
+                            <i class="fa-solid fa-building mr-2 text-blue-500"></i>
+                            <span id="userDashDept"></span>
+                        </p>
+
+                        <div class="grid grid-cols-2 gap-3 mt-6">
+                            <div class="bg-blue-50 p-4 rounded-xl text-center">
+                                <p id="statTotalLogs" class="text-2xl text-blue-600 font-extrabold">0</p>
+                                <p class="text-xs">Total Reports</p>
+                            </div>
+
+                            <div class="bg-emerald-50 p-4 rounded-xl text-center">
+                                <p id="statApprovedLogs" class="text-2xl text-emerald-600 font-extrabold">0</p>
+                                <p class="text-xs">Reviewed</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 space-y-6">
+
+                        <div class="glass rounded-2xl p-6 shadow-xl">
+                            <h2 class="text-xl font-extrabold mb-5">Submit Daily Progress</h2>
+
+                            <form id="progressForm" onsubmit="handleProgressSubmit(event)" class="space-y-4">
+
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1">Project / Task</label>
+                                    <input id="logProject" type="text" required
+                                        placeholder="Enter project name"
+                                        class="w-full border rounded-lg p-3">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1">Hours Spent</label>
+                                    <input id="logHours" type="number" min="0.5" max="24" step="0.5" required
+                                        placeholder="Example: 7.5"
+                                        class="w-full border rounded-lg p-3">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1">Work Details</label>
+                                    <textarea id="logDetails" rows="4" required
+                                        placeholder="Describe your completed work"
+                                        class="w-full border rounded-lg p-3"></textarea>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1">Status</label>
+                                    <select id="logStatus" class="w-full border rounded-lg p-3">
+                                        <option value="Completed">Completed</option>
+                                        <option value="In Progress">In Progress</option>
+                                        <option value="Blocked">Blocked / Pending</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1">Notes</label>
+                                    <input id="logNotes" type="text"
+                                        placeholder="Optional notes"
+                                        class="w-full border rounded-lg p-3">
+                                </div>
+
+                                <button type="submit"
+                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-bold">
+                                    <i class="fa-solid fa-paper-plane mr-2"></i>Submit Report
+                                </button>
+
+                            </form>
+                        </div>
+
+                        <div class="glass rounded-2xl p-6 shadow-xl">
+                            <h2 class="text-xl font-extrabold mb-4">My Submitted Reports</h2>
+                            <div id="userLogHistory" class="space-y-3"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- ADMIN DASHBOARD -->
+            <section id="adminDashboard" class="hidden max-w-7xl mx-auto p-4 md:p-8">
+
+                <div class="bg-slate-900 border border-slate-700 text-white rounded-2xl p-6 mb-6">
+                    <h2 class="text-2xl font-extrabold">
+                        <i class="fa-solid fa-shield-halved text-amber-400 mr-2"></i>
+                        Admin Control Center
+                    </h2>
+                    <p class="text-slate-400 mt-2">Manage employees and review progress reports.</p>
+
+                    <div class="grid grid-cols-2 gap-4 mt-6">
+                        <div class="bg-slate-800 rounded-xl p-4">
+                            <p class="text-slate-400 text-sm">Total Staff</p>
+                            <p id="adminStatStaff" class="text-3xl font-bold text-amber-400">0</p>
+                        </div>
+                        <div class="bg-slate-800 rounded-xl p-4">
+                            <p class="text-slate-400 text-sm">Total Reports</p>
+                            <p id="adminStatLogs" class="text-3xl font-bold text-blue-400">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass rounded-2xl p-6 shadow-xl">
+                    <div class="flex flex-col md:flex-row gap-4 justify-between mb-6">
+                        <h2 class="text-xl font-extrabold">Employee Progress Reports</h2>
+
+                        <input id="adminSearch" type="search"
+                            oninput="renderAdminReports()"
+                            placeholder="Search employees or projects..."
+                            class="border rounded-lg p-3">
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-slate-100 text-sm">
+                                    <th class="p-3">Date</th>
+                                    <th class="p-3">Employee</th>
+                                    <th class="p-3">Project</th>
+                                    <th class="p-3">Hours</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminReportsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="glass rounded-2xl p-6 shadow-xl mt-6">
+                    <h2 class="text-xl font-extrabold mb-4">Registered Employees</h2>
+                    <div id="adminStaffView" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="bg-slate-950 text-slate-500 text-center p-6 text-xs">
+            © 2026 RY Creations. All Rights Reserved.
+        </footer>
+    </div>
+
+    <!-- LOGIN / REGISTER MODAL -->
+    <div id="authModal" class="hidden fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md relative shadow-2xl">
+
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-xl text-slate-500">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex gap-2 mb-6 pr-6">
+                <button onclick="switchAuthTab('user')" id="tabUserBtn"
+                    class="flex-1 bg-blue-600 text-white p-3 rounded-lg font-bold">
+                    Employee
+                </button>
+
+                <button onclick="switchAuthTab('admin')" id="tabAdminBtn"
+                    class="flex-1 bg-slate-200 text-slate-700 p-3 rounded-lg font-bold">
+                    Admin
+                </button>
+            </div>
+
+            <!-- EMPLOYEE AUTH -->
+            <div id="userAuthContainer">
+
+                <div class="flex justify-between items-center mb-5">
+                    <h2 id="userFormTitle" class="text-xl font-extrabold">Staff Sign In</h2>
+
+                    <button id="toggleRegisterBtn" onclick="toggleRegisterMode()"
+                        class="text-blue-600 text-xs font-bold">
+                        Create Account
+                    </button>
+                </div>
+
+                <form id="userLoginForm" onsubmit="handleUserAuth(event)" class="space-y-4">
+
+                    <div id="registrationFields" class="hidden space-y-4">
+
+                        <input id="regFullName" type="text"
+                            placeholder="Full Name"
+                            class="w-full border rounded-lg p-3">
+
+                        <input id="regPhone" type="tel"
+                            maxlength="10"
+                            placeholder="10-digit Mobile Number"
+                            class="w-full border rounded-lg p-3">
+
+                        <input id="regRole" type="text"
+                            placeholder="Job Role"
+                            class="w-full border rounded-lg p-3">
+
+                        <button type="button" onclick="sendOtp()"
+                            class="w-full bg-indigo-600 text-white rounded-lg p-3 font-bold">
+                            Send Demo OTP
+                        </button>
+
+                        <div id="otpSection" class="hidden space-y-3">
+                            <input id="regOtpInput" type="text" maxlength="4"
+                                placeholder="Enter OTP"
+                                class="w-full border rounded-lg p-3">
+
+                            <button type="button" onclick="verifyOtp()"
+                                class="w-full bg-emerald-600 text-white rounded-lg p-3 font-bold">
+                                Verify OTP
+                            </button>
+                        </div>
+
+                        <p id="otpVerifyBadge" class="hidden text-emerald-600 text-sm font-bold">
+                            Phone verified
+                        </p>
+                    </div>
+
+                    <input id="userInputId" type="text" required
+                        placeholder="User ID / Username"
+                        class="w-full border rounded-lg p-3">
+
+                    <input id="userInputPass" type="password" required
+                        placeholder="Password"
+                        class="w-full border rounded-lg p-3">
+
+                    <button id="userAuthSubmitBtn" type="submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg p-3 font-bold">
+                        Sign In
+                    </button>
+
+                </form>
+            </div>
+
+            <!-- ADMIN AUTH -->
+            <div id="adminAuthContainer" class="hidden">
+
+                <h2 class="text-xl font-extrabold mb-5">Admin Login</h2>
+
+                <form onsubmit="handleAdminAuth(event)" class="space-y-4">
+
+                    <input id="adminInputId" type="text" required
+                        placeholder="Admin User ID"
+                        class="w-full border rounded-lg p-3">
+
+                    <input id="adminInputPass" type="password" required
+                        placeholder="Admin Password"
+                        class="w-full border rounded-lg p-3">
+
+                    <button type="submit"
+                        class="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-lg p-3 font-bold">
+                        Login as Admin
+                    </button>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // DEMO ADMIN CREDENTIALS
+        const ADMIN_CREDENTIALS = {
+            username: "YUVA001",
+            password: "Admin@123"
+        };
+
+        // APPLICATION STATE
+        let currentUser = null;
+        let isRegistering = false;
+        let generatedOtp = null;
+        let isOtpVerified = false;
+
+        // LOCAL STORAGE
+        function getUsers() {
+            return JSON.parse(localStorage.getItem("ry_users") || "[]");
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem("ry_users", JSON.stringify(users));
+        }
+
+        function getLogs() {
+            return JSON.parse(localStorage.getItem("ry_logs") || "[]");
+        }
+
+        function saveLogs(logs) {
+            localStorage.setItem("ry_logs", JSON.stringify(logs));
+        }
+
+        // NOTIFICATIONS
+        function showToast(message, type = "info") {
+            const container = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+
+            const colors = {
+                success: "bg-emerald-600",
+                error: "bg-red-600",
+                info: "bg-slate-800"
+            };
+
+            toast.className = `toast ${colors[type] || colors.info} text-white px-5 py-3 rounded-xl shadow-lg`;
+            toast.textContent = message;
+
+            container.appendChild(toast);
+
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // INITIALIZE
+        window.addEventListener("DOMContentLoaded", () => {
+            const session = sessionStorage.getItem("ry_session");
+
+            if (session) {
+                currentUser = JSON.parse(session);
+                updateNav();
+
+                if (currentUser.isAdmin) {
+                    showAdminDashboard();
+                } else {
+                    showUserDashboard();
+                }
+            } else {
+                showLanding();
+            }
+        });
+
+        // NAVIGATION
+        function hideAllSections() {
+            document.getElementById("landingSection").classList.add("hidden");
+            document.getElementById("userDashboard").classList.add("hidden");
+            document.getElementById("adminDashboard").classList.add("hidden");
+        }
+
+        function showLanding() {
+            hideAllSections();
+            document.getElementById("landingSection").classList.remove("hidden");
+        }
+
+        function showUserDashboard() {
+            if (!currentUser || currentUser.isAdmin) return;
+
+            hideAllSections();
+            document.getElementById("userDashboard").classList.remove("hidden");
+
+            renderUserProfile();
+            renderUserLogs();
+        }
+
+        function showAdminDashboard() {
+            if (!currentUser || !currentUser.isAdmin) return;
+
+            hideAllSections();
+            document.getElementById("adminDashboard").classList.remove("hidden");
+
+            renderAdminReports();
+            renderAdminStaff();
+        }
+
+        function updateNav() {
+            const loginBtn = document.getElementById("loginNavBtn");
+            const badge = document.getElementById("userInfoBadge");
+
+            if (currentUser) {
+                loginBtn.classList.add("hidden");
+                badge.classList.remove("hidden");
+                badge.classList.add("flex");
+
+                document.getElementById("navUserName").textContent =
+                    currentUser.isAdmin ? "Admin Manager" : currentUser.name;
+
+                document.getElementById("navUserRole").textContent =
+                    currentUser.isAdmin ? "Administrator" : currentUser.role;
+            } else {
+                loginBtn.classList.remove("hidden");
+                badge.classList.add("hidden");
+                badge.classList.remove("flex");
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            sessionStorage.removeItem("ry_session");
+
+            updateNav();
+            showLanding();
+            showToast("Logged out successfully.");
+        }
+
+        // AUTHENTICATION MODAL
+        function showAuthModal(tab = "user") {
+            document.getElementById("authModal").classList.remove("hidden");
+            switchAuthTab(tab);
+        }
+
+        function closeAuthModal() {
+            document.getElementById("authModal").classList.add("hidden");
+        }
+
+        function switchAuthTab(tab) {
+            const isUser = tab === "user";
+
+            document.getElementById("userAuthContainer").classList.toggle("hidden", !isUser);
+            document.getElementById("adminAuthContainer").classList.toggle("hidden", isUser);
+
+            document.getElementById("tabUserBtn").className = isUser
+                ? "flex-1 bg-blue-600 text-white p-3 rounded-lg font-bold"
+                : "flex-1 bg-slate-200 text-slate-700 p-3 rounded-lg font-bold";
+
+            document.getElementById("tabAdminBtn").className = !isUser
+                ? "flex-1 bg-blue-600 text-white p-3 rounded-lg font-bold"
+                : "flex-1 bg-slate-200 text-slate-700 p-3 rounded-lg font-bold";
+        }
+
+        function toggleRegisterMode() {
+            isRegistering = !isRegistering;
+            generatedOtp = null;
+            isOtpVerified = false;
+
+            document.getElementById("userFormTitle").textContent =
+                isRegistering ? "Create Staff Account" : "Staff Sign In";
+
+            document.getElementById("toggleRegisterBtn").textContent =
+                isRegistering ? "Back to Sign In" : "Create Account";
+
+            document.getElementById("userAuthSubmitBtn").textContent =
+                isRegistering ? "Complete Registration" : "Sign In";
+
+            document.getElementById("registrationFields").classList.toggle("hidden", !isRegistering);
+            document.getElementById("otpSection").classList.add("hidden");
+            document.getElementById("otpVerifyBadge").classList.add("hidden");
+        }
+
+        // DEMO OTP
+        function sendOtp() {
+            const phone = document.getElementById("regPhone").value.trim();
+
+            if (!/^\d{10}$/.test(phone)) {
+                showToast("Enter a valid 10-digit mobile number.", "error");
+                return;
+            }
+
+            generatedOtp = String(Math.floor(1000 + Math.random() * 9000));
+            isOtpVerified = false;
+
+            document.getElementById("otpSection").classList.remove("hidden");
+            document.getElementById("otpVerifyBadge").classList.add("hidden");
+
+            alert("DEMO OTP: " + generatedOtp + "\nThis demo does not send a real SMS.");
+        }
+
+        function verifyOtp() {
+            const entered = document.getElementById("regOtpInput").value.trim();
+
+            if (generatedOtp && entered === generatedOtp) {
+                isOtpVerified = true;
+                document.getElementById("otpVerifyBadge").classList.remove("hidden");
+                showToast("OTP verified successfully.", "success");
+            } else {
+                showToast("Incorrect OTP.", "error");
+            }
+        }
+
+        // ADMIN LOGIN
+        function handleAdminAuth(event) {
+            event.preventDefault();
+
+            const id = document.getElementById("adminInputId").value.trim();
+            const password = document.getElementById("adminInputPass").value;
+
+            if (
+                id === ADMIN_CREDENTIALS.username &&
+                password === ADMIN_CREDENTIALS.password
+            ) {
+                currentUser = {
+                    id,
+                    name: "Admin Manager",
+                    role: "Administrator",
+                    isAdmin: true
+                };
+
+                sessionStorage.setItem("ry_session", JSON.stringify(currentUser));
+
+                updateNav();
+                closeAuthModal();
+                showAdminDashboard();
+                showToast("Admin login successful.", "success");
+            } else {
+                showToast("Invalid admin credentials.", "error");
+            }
+        }
+
+        // EMPLOYEE LOGIN / REGISTRATION
+        function handleUserAuth(event) {
+            event.preventDefault();
+
+            const users = getUsers();
+            const id = document.getElementById("userInputId").value.trim();
+            const password = document.getElementById("userInputPass").value;
+
+            if (!id || !password) {
+                showToast("Enter your user ID and password.", "error");
+                return;
+            }
+
+            if (isRegistering) {
+                const name = document.getElementById("regFullName").value.trim();
+                const phone = document.getElementById("regPhone").value.trim();
+                const role = document.getElementById("regRole").value.trim() || "Team Member";
+
+                if (!name || !phone) {
+                    showToast("Enter your name and mobile number.", "error");
+                    return;
+                }
+
+                if (!isOtpVerified) {
+                    showToast("Verify the demo OTP before registering.", "error");
+                    return;
+                }
+
+                if (users.some(user => user.id.toLowerCase() === id.toLowerCase())) {
+                    showToast("This user ID is already registered.", "error");
+                    return;
+                }
+
+                const newUser = {
+                    id,
+                    password,
+                    name,
+                    phone,
+                    role,
+                    dept: "General",
+                    email: id.toLowerCase() + "@rycreations.com",
+                    bio: "RY Creations team member",
+                    isAdmin: false
+                };
+
+                users.push(newUser);
+                saveUsers(users);
+
+                currentUser = newUser;
+                sessionStorage.setItem("ry_session", JSON.stringify(currentUser));
+
+                updateNav();
+                closeAuthModal();
+                showUserDashboard();
+                showToast("Account created successfully.", "success");
+
+            } else {
+                const user = users.find(item =>
+                    item.id.toLowerCase() === id.toLowerCase() &&
+                    item.password === password
+                );
+
+                if (!user) {
+                    showToast("Invalid login or account not found.", "error");
+                    return;
+                }
+
+                currentUser = { ...user, isAdmin: false };
+                sessionStorage.setItem("ry_session", JSON.stringify(currentUser));
+
+                updateNav();
+                closeAuthModal();
+                showUserDashboard();
+                showToast("Welcome back, " + currentUser.name + "!", "success");
+            }
+        }
+
+        // EMPLOYEE PROFILE
+        function renderUserProfile() {
+            if (!currentUser || currentUser.isAdmin) return;
+
+            document.getElementById("userDashName").textContent = currentUser.name;
+            document.getElementById("userDashRole").textContent = currentUser.role || "Team Member";
+            document.getElementById("userDashId").textContent = "ID: " + currentUser.id;
+            document.getElementById("userDashEmail").textContent = currentUser.email || "";
+            document.getElementById("userDashDept").textContent = currentUser.dept || "General";
+        }
+
+        // SUBMIT WORK REPORT
+        function handleProgressSubmit(event) {
+            event.preventDefault();
+
+            if (!currentUser || currentUser.isAdmin) return;
+
+            const project = document.getElementById("logProject").value.trim();
+            const hours = Number(document.getElementById("logHours").value);
+            const details = document.getElementById("logDetails").value.trim();
+
+            if (!project || !details || hours <= 0 || hours > 24) {
+                showToast("Enter valid report information.", "error");
+                return;
+            }
+
+            const logs = getLogs();
+
+            logs.unshift({
+                id: "LOG_" + Date.now(),
+                userId: currentUser.id,
+                userName: currentUser.name,
+                project,
+                hours,
+                details,
+                status: document.getElementById("logStatus").value,
+                notes: document.getElementById("logNotes").value.trim(),
+                date: new Date().toLocaleDateString(),
+                reviewed: false
+            });
+
+            saveLogs(logs);
+            document.getElementById("progressForm").reset();
+
+            renderUserLogs();
+            showToast("Progress report submitted.", "success");
+        }
+
+        // EMPLOYEE REPORT HISTORY
+        function renderUserLogs() {
+            if (!currentUser || currentUser.isAdmin) return;
+
+            const logs = getLogs().filter(log => log.userId === currentUser.id);
+            const container = document.getElementById("userLogHistory");
+
+            document.getElementById("statTotalLogs").textContent = logs.length;
+            document.getElementById("statApprovedLogs").textContent =
+                logs.filter(log => log.reviewed).length;
+
+            if (!logs.length) {
+                container.innerHTML =
+                    '<p class="text-slate-500 text-sm">No reports submitted yet.</p>';
+                return;
+            }
+
+            container.innerHTML = logs.map(log => `
+                <div class="border rounded-xl p-4 bg-white">
+                    <div class="flex flex-wrap justify-between gap-2">
+                        <h3 class="font-bold">${escapeHTML(log.project)}</h3>
+                        <span class="text-xs font-bold ${statusColor(log.status)}">${escapeHTML(log.status)}</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mt-2">${escapeHTML(log.details)}</p>
+                    <p class="text-xs text-slate-500 mt-3">
+                        ${escapeHTML(log.date)} · ${log.hours} hours
+                    </p>
+                    ${log.reviewed ? '<p class="text-emerald-600 text-xs font-bold mt-2">Reviewed by admin</p>' : ''}
+                </div>
+            `).join("");
+        }
+
+        // ADMIN REPORT TABLE
+        function renderAdminReports() {
+            const logs = getLogs();
+            const users = getUsers();
+            const search = document.getElementById("adminSearch").value.toLowerCase();
+
+            document.getElementById("adminStatStaff").textContent = users.length;
+            document.getElementById("adminStatLogs").textContent = logs.length;
+
+            const filtered = logs.filter(log =>
+                log.userName.toLowerCase().includes(search) ||
+                log.project.toLowerCase().includes(search) ||
+                log.details.toLowerCase().includes(search)
+            );
+
+            const tbody = document.getElementById("adminReportsTable");
+
+            if (!filtered.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="p-6 text-center text-slate-500">
+                            No reports found.
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(log => `
+                <tr class="border-b hover:bg-slate-50">
+                    <td class="p-3 text-sm">${escapeHTML(log.date)}</td>
+                    <td class="p-3 text-sm font-semibold">${escapeHTML(log.userName)}</td>
+                    <td class="p-3 text-sm">
+                        <p class="font-bold">${escapeHTML(log.project)}</p>
+                        <p class="text-xs text-slate-500">${escapeHTML(log.details)}</p>
+                    </td>
+                    <td class="p-3 text-sm">${log.hours}</td>
+                    <td class="p-3 text-xs font-bold ${statusColor(log.status)}">
+                        ${escapeHTML(log.status)}
+                        ${log.reviewed ? '<p class="text-emerald-600">Reviewed</p>' : ''}
+                    </td>
+                    <td class="p-3">
+                        <button onclick="reviewLog('${log.id}')"
+                            class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-bold">
+                            ${log.reviewed ? "Reviewed" : "Review"}
+                        </button>
+                    </td>
+                </tr>
+            `).join("");
+        }
+
+        // ADMIN REVIEW ACTION
+        function reviewLog(logId) {
+            if (!currentUser || !currentUser.isAdmin) {
+                showToast("Admin access required.", "error");
+                return;
+            }
+
+            const logs = getLogs();
+            const log = logs.find(item => item.id === logId);
+
+            if (!log) return;
+
+            log.reviewed = true;
+            saveLogs(logs);
+
+            renderAdminReports();
+            showToast("Report marked as reviewed.", "success");
+        }
+
+        // REGISTERED EMPLOYEES
+        function renderAdminStaff() {
+            const users = getUsers();
+            const container = document.getElementById("adminStaffView");
+
+            if (!users.length) {
+                container.innerHTML =
+                    '<p class="text-slate-500">No registered employees yet.</p>';
+                return;
+            }
+
+            container.innerHTML = users.map(user => `
+                <div class="bg-white border rounded-xl p-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold">${escapeHTML(user.name)}</h3>
+                            <p class="text-xs text-blue-600">${escapeHTML(user.role || "Team Member")}</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-slate-600">User ID: ${escapeHTML(user.id)}</p>
+                    <p class="text-sm text-slate-600">Department: ${escapeHTML(user.dept || "General")}</p>
+                    <p class="text-sm text-slate-600">Email: ${escapeHTML(user.email || "")}</p>
+                </div>
+            `).join("");
+        }
+
+        // UTILITIES
+        function statusColor(status) {
+            if (status === "Completed") return "text-emerald-600";
+            if (status === "In Progress") return "text-blue-600";
+            return "text-amber-600";
+        }
+
+        function escapeHTML(value) {
+            return String(value ?? "").replace(/[&<>"']/g, character => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            })[character]);
+        }
+    </script>
+
+</body>
+</html>
